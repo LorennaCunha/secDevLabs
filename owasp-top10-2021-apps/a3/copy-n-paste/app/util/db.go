@@ -46,8 +46,8 @@ func AuthenticateUser(user string, pass string) (bool, error) {
 	}
 	defer dbConn.Close()
 
-	query := fmt.Sprint("select * from Users where username = '" + user + "'")
-	rows, err := dbConn.Query(query)
+	query := ("SELECT * FROM Users WHERE username = ?")
+	rows, err := dbConn.Query(query, user)
 	if err != nil {
 		return false, err
 	}
@@ -88,12 +88,12 @@ func NewUser(user string, pass string, passcheck string) (bool, error) {
 	}
 	defer dbConn.Close()
 
-	query := fmt.Sprint("insert into Users (username, password) values ('" + user + "', '" + passHash + "')")
-	rows, err := dbConn.Query(query)
+	query := ("INSERT INTO Users (username, password) VALUES (?, ?)")
+	rows, err := dbConn.Exec(query, user, passHash)
 	if err != nil {
 		return false, err
 	}
-	defer rows.Close()
+	
 
 	fmt.Println("User created: ", user)
 	return true, nil //user created
@@ -108,8 +108,8 @@ func CheckIfUserExists(username string) (bool, error) {
 	}
 	defer dbConn.Close()
 
-	query := fmt.Sprint("select username from Users where username = '" + username + "'")
-	rows, err := dbConn.Query(query)
+	query := ("SELECT username FROM Users WHERE username = ?")
+	rows, err := dbConn.Query(query, username)
 	if err != nil {
 		return false, err
 	}
@@ -126,16 +126,16 @@ func InitDatabase() error {
 
 	dbConn, err := OpenDBConnection()
 	if err != nil {
-		errOpenDBConnection := fmt.Sprintf("OpenDBConnection error: %s", err)
+		errOpenDBConnection := ("OpenDBConnection error: %s" + err)
 		return errors.New(errOpenDBConnection)
 	}
 
 	defer dbConn.Close()
 
-	queryCreate := fmt.Sprint("CREATE TABLE Users (ID int NOT NULL AUTO_INCREMENT, Username varchar(20), Password varchar(80), PRIMARY KEY (ID))")
+	queryCreate := ("CREATE TABLE Users (ID int NOT NULL AUTO_INCREMENT, Username varchar(20), Password varchar(80), PRIMARY KEY (ID))")
 	_, err = dbConn.Exec(queryCreate)
 	if err != nil {
-		errInitDB := fmt.Sprintf("InitDatabase error: %s", err)
+		errInitDB := ("InitDatabase error: %s" + err)
 		return errors.New(errInitDB)
 	}
 
