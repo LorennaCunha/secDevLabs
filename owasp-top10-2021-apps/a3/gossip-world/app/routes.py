@@ -7,6 +7,7 @@ from functools import wraps
 import os
 import uuid
 import datetime
+import bleach
 
 from flask import (
     Flask,
@@ -32,6 +33,8 @@ database = DataBase(
     app.config['MYSQL_PASSWORD'],
     app.config['MYSQL_DB'])
 
+allowed_tags = ['b', 'i', 'u', 'em', 'strong', 'a']
+allowed_attrs = {'a':['href', 'title']}
 
 def generate_csrf_token():
     '''
@@ -163,7 +166,7 @@ def all_gossips():
 @login_required
 def gossip(id):
     if request.method == 'POST':
-        comment = request.form.get('comment')
+        comment = bleach.clean(request.form.get('comment'), tags=allowed_tags, attributes=allowed_attrs)
         user = session.get('username')
         date = datetime.datetime.now()
         if comment == '':
@@ -198,9 +201,9 @@ def gossip(id):
 @login_required
 def newgossip():
     if request.method == 'POST':
-        text = request.form.get('text')
-        subtitle = request.form.get('subtitle')
-        title = request.form.get('title')
+        text = bleach.clean(request.form.get('text'), tags=allowed_tags, attributes=allowed_attrs)
+        subtitle = bleach.clean(request.form.get('subtitle'))
+        title = bleach.clean(request.form.get('title'))
         author = session.get('username')
         date = datetime.datetime.now()
         if author is None or text is None or subtitle is None or title is None:

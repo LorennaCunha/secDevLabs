@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import MySQLdb
+import bleach
 
 
 class DataBase:
@@ -143,6 +144,10 @@ class DataBase:
         return comments, 1
 
     def post_comment(self, author, comment, gossip_id, date):
+        allowed_tags = ['b', 'i', 'u', 'em', 'strong', 'a']
+        allowed_attrs = {'a': ['href', 'title']}
+        
+        clean_comment = {bleach.clean(comment, tags=allowed_tags, attributes=allowed_attrs)}
         try:
             self.c.execute(
                 'INSERT INTO comments (author, comment, gossip_id, date) VALUES (%s, %s, %s, %s);',
