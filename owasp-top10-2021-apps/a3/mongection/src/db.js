@@ -4,15 +4,18 @@ const register = async (user) => {
 
     try { 
         const { name, email, password } = user;
+        const sanitizedName = String(name);
+        const sanitizedEmail = String(email);
+        const sanitizedPassword = String(password);
 
-        const existUser = await User.findOne({email: email});
+        const existUser = await User.findOne({email: sanitizedEmail});
 
         if(existUser) { return null }
 
         const newUser = new User({
-            name: name,
-            email: email,
-            password: password
+            name: sanitizedName,
+            email: sanitizedEmail,
+            password: sanitizedPassword
         });
 
         await newUser.save();
@@ -29,18 +32,18 @@ const login = async (credentials) => {
     try {
         const { email, password } = credentials;
 
-        const existsUser = await User.find({$and: [ { email: email}, { password: password} ]});
+        const existsUser = await User.find({$and: [ { email: sanitizedEmail}, { password: sanitizedPassword} ]});
 
         if(!existsUser) { return null;}
 
         const returnUser = existsUser.map((user) => {
-            return user.email
+            return null;
         })
 
 
         return returnUser;
     }
-
+    
     catch(error) { throw error; }
     
 
